@@ -1,0 +1,17 @@
+# Node
+node_modules/
+.env
+dist/
+coverage/
+logs/
+
+# Vue
+frontend/dist
+frontend/node_modules
+
+# OS
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
