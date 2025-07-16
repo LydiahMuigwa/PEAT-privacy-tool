@@ -12,10 +12,21 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "axios": "^1.9.0",
+    "body-parser": "^2.2.0",
     "cors": "^2.8.5",
+    "dompurify": "^3.2.6",
     "dotenv": "^16.4.7",
     "express": "^4.21.2",
-    "openai": "^4.89.1"
+    "express-rate-limit": "^7.5.0",
+    "google-search-results-nodejs": "^2.1.0",
+    "libphonenumber-js": "^1.12.9",
+    "mongodb": "^6.16.0",
+    "mongoose": "^8.15.1",
+    "openai": "^4.89.1",
+    "pdfkit": "^0.17.1",
+    "puppeteer": "^24.10.2",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "nodemon": "^3.1.9"

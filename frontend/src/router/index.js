@@ -1,12 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from '../views/Home.vue'
 import Footprint from '../views/Footprint.vue'
-import Education from '../views/Education.vue'
+import LandingPage from '../views/LandingPage.vue' 
 
 const routes = [
-  { path: '/', component: Home },
-  { path: '/footprint', component: Footprint },
-  { path: '/education', name: 'Education', component: Education }
+  { path: '/', name: 'Landing', component: LandingPage },
+  { path: '/footprint', name: 'Footprint', component: Footprint }
 ]
 
 const router = createRouter({

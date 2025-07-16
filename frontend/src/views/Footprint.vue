@@ -1,221 +1,307 @@
 <template>
-  <div style="padding: 2rem; display: flex; flex-direction: column; align-items: center;">
-    <h2>Digital Footprint Scanner</h2>
+  <div :class="{ dark: isDark }" class="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+    
+    <AppHeader />
 
-    <form @submit.prevent="analyzeExposure" style="margin-bottom: 1rem; width: 100%; max-width: 600px; display: flex; gap: 0.5rem;">
-      <input
-        v-model="profileUrl"
-        placeholder="Enter LinkedIn profile URL"
-        style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #ccc;"
-      />
-      <button
-        type="submit"
-        style="padding: 0.5rem 1rem; background-color: #1d4ed8; color: white; border: none; border-radius: 4px; cursor: pointer;"
-      >
-        Analyze
-      </button>
-    </form>
-
-    <div v-if="loading" style="margin-top: 1rem;">⏳ Analyzing exposure, hang tight...</div>
-
-    <div
-      v-if="response && !loading"
-      style="margin-top: 2rem; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); width: 100%; max-width: 1200px;"
-    >
-      <h3>🔎 Scan Results for:</h3>
-      <p><strong>{{ response.url }}</strong></p>
-
-      <h4>📦 Data Found:</h4>
-      <ul>
-        <li v-for="item in response.dataFound" :key="item">✅ {{ item }}</li>
-      </ul>
-
-      <div
-        v-if="response.dataFound?.length"
-        style="margin-top: 2rem; max-width: 400px; width: 100%; margin-bottom: 2rem;"
-      >
-        <h4>📊 Exposure Overview</h4>
-        <DonutChart :labels="response.dataFound" :values="response.dataFound.map(() => 1)" />
-      </div>
-
-      <h4>🧠 Risk Score:</h4>
-      <p :style="getScoreStyle(score)">{{ score }} / 100 – <strong>{{ getRiskLevel(score) }}</strong></p>
-
-      <div style="margin-top: 1rem;">
-        <div style="height: 20px; background: #eee; border-radius: 10px; overflow: hidden;">
-          <div
-            :style="{
-              width: score + '%',
-              background: getScoreStyle(score).background,
-              height: '100%',
-              transition: 'width 0.5s ease-in-out'
-            }"
-          ></div>
-        </div>
-      </div>
-
-      <h4 style="margin-top: 1.5rem;">🛡️ Detected PII Exposure:</h4>
-      <div style="margin-bottom: 1rem;">
-        <span
-          v-for="pii in response.piiExposed"
-          :key="pii"
-          style="display: inline-block; background: #e74c3c; color: white; padding: 4px 8px; border-radius: 6px; margin: 4px; font-size: 0.85rem;"
-        >
-          ⚠️ {{ pii }}
-        </span>
-      </div>
-
-      <h4>⚠️ Potential Risks:</h4>
-      <ul>
-        <li v-for="risk in response.potentialRisks" :key="risk">❗ {{ risk }}</li>
-      </ul>
-
-      <h4>🌿 Privacy Tips:</h4>
-      <ul>
-        <li v-for="tip in response.privacyTips" :key="tip">✅ {{ tip }}</li>
-      </ul>
-
-      <h4>📚 Personalized Learning:</h4>
-      <ul>
-        <li v-for="lesson in response.educationSuggestions" :key="lesson.title">
-          <strong>{{ lesson.title }}</strong>
-          <span style="margin-left: 0.5rem; font-size: 0.85rem; color: gray;">({{ lesson.level }})</span>
-        </li>
-      </ul>
-
-      <TimelineChart v-if="response.timeline?.length" :timelineData="response.timeline" />
-
-      <div v-if="response.simulatedAttacks?.length" style="margin-top: 2rem;">
-        <h4>🧪 Simulated Attack Demonstrations:</h4>
-        <div
-          v-for="(attack, index) in response.simulatedAttacks"
-          :key="index"
-          style="margin-bottom: 1.5rem; padding: 1rem; background: #fef2f2; border-left: 5px solid #dc2626; border-radius: 6px;"
-        >
-          <p><strong>{{ attack.type }}</strong> (🎯 {{ attack.attackerGoal }})</p>
-          <p><em>Subject:</em> {{ attack.subject }}</p>
-          <details>
-            <summary style="cursor: pointer; margin-top: 0.5rem; color: #dc2626;">📬 View Message</summary>
-            <pre style="white-space: pre-wrap; background: #fff; padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px; margin-top: 0.5rem;">{{ attack.message }}</pre>
-          </details>
-
-          <button @click="explainThisAttack(index)" style="margin-top: 0.7rem; background: #3b82f6; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 5px; cursor: pointer;">
-            🧠 Explain This Attack
-          </button>
-
-          <div v-if="attack.explained">
-            <p style="margin-top: 1rem; background: #f0fdf4; padding: 1rem; border-radius: 5px;">{{ attack.explained }}</p>
-          </div>
-          <div v-else-if="attack.loading">
-            <p style="margin-top: 1rem; font-style: italic; color: gray;">⏳ Thinking like a hacker...</p>
-          </div>
-
-          <div v-if="attack.quiz">
-            <h4 style="margin-top: 1rem;">🧪 Quiz: Spot the Red Flags</h4>
-            <div v-for="(question, qIndex) in attack.quiz" :key="qIndex">
-              <label>
-                <input type="checkbox" v-model="question.selected" />
-                {{ question.text }}
-              </label>
-            </div>
-            <button @click="checkQuizAnswers(attack)" style="margin-top: 0.5rem; background: #10b981; color: white; padding: 0.3rem 0.6rem; border: none; border-radius: 4px;">✅ Check Answers</button>
-            <div v-if="attack.quizScore !== undefined">
-              <p :style="{ color: attack.quizScore === attack.quiz.length ? 'green' : 'red', marginTop: '0.5rem' }">
-                {{ attack.quizScore === attack.quiz.length ? '✅ Correct! 🕵️‍♂️ You spotted all red flags!' : `⚠️ You missed ${attack.quiz.length - attack.quizScore} red flag(s)` }}
-              </p>
-            </div>
+    <main class="pt-24 pb-8 px-4">
+      <div class="max-w-2xl mx-auto space-y-8">
+        
+        <!-- Clean hero -->
+        <div class="text-center space-y-6">
+          <div class="space-y-3">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+              Check Your Privacy Footprint
+            </h1>
+            <p class="text-lg text-gray-600 dark:text-gray-400">
+              See what data attackers can find about you online in 2 minutes.
+            </p>
           </div>
         </div>
-      </div>
 
-      <p style="margin-top: 1rem;"><em>{{ response.message }}</em></p>
-    </div>
+        <!-- Consent confirmation badge -->
+        <div class="flex justify-center">
+          <div class="inline-flex items-center gap-2 px-3 py-1 bg-green-50 dark:bg-green-900/30 rounded-full text-green-700 dark:text-green-300 text-xs font-medium border border-green-200 dark:border-green-800">
+            <svg class="w-3 h-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Research Consent Confirmed
+          </div>
+        </div>
+
+        <!-- Simple scan interface -->
+        <div class="bg-gray-50 dark:bg-gray-800 rounded-lg p-6 border border-gray-200 dark:border-gray-700">
+          
+          <!-- Guidance text -->
+          <div class="text-center mb-6">
+            <p class="text-sm text-gray-600 dark:text-gray-400">
+              Start with your <strong class="text-gray-900 dark:text-white">email</strong> for breach analysis, 
+              or try <strong class="text-gray-900 dark:text-white">username</strong> for social media discovery
+            </p>
+          </div>
+
+          <!-- Tab selector -->
+          <div class="mb-6">
+            <div class="flex space-x-1 bg-gray-200 dark:bg-gray-700 rounded-lg p-1">
+              <button
+                @click="activeTab = 'email'"
+                :class="[
+                  'flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors',
+                  activeTab === 'email'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ]"
+              >
+                📧 Email Analysis
+              </button>
+              <button
+                @click="activeTab = 'username'"
+                :class="[
+                  'flex-1 py-2 px-4 text-sm font-medium rounded-md transition-colors',
+                  activeTab === 'username'
+                    ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+                ]"
+              >
+                👤 Username Search
+              </button>
+            </div>
+          </div>
+
+          <!-- Input field -->
+          <div class="space-y-4">
+            <input
+              v-model="modelValue"
+              :type="activeTab === 'email' ? 'email' : 'text'"
+              :placeholder="activeTab === 'email' ? 'Enter your email address...' : 'Enter username...'"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+            />
+            
+            <!-- Single CTA button -->
+            <button
+              @click="runScan"
+              :disabled="loading || !modelValue.trim()"
+              class="w-full py-3 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+            >
+              <svg v-if="loading" class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+              </svg>
+              {{ loading ? 'Analyzing...' : 'Start Privacy Scan' }}
+            </button>
+          </div>
+
+          <!-- Simple trust indicators -->
+          <div class="grid grid-cols-3 gap-4 mt-6 text-center">
+            <div class="flex flex-col items-center gap-2">
+              <div class="w-8 h-8 bg-green-100 dark:bg-green-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-green-600 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                </svg>
+              </div>
+              <div class="text-xs">
+                <div class="font-medium text-gray-900 dark:text-white">Secure</div>
+                <div class="text-gray-500 dark:text-gray-400">No passwords</div>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-center gap-2">
+              <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/30 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                </svg>
+              </div>
+              <div class="text-xs">
+                <div class="font-medium text-gray-900 dark:text-white">Fast</div>
+                <div class="text-gray-500 dark:text-gray-400">2 minutes</div>
+              </div>
+            </div>
+
+            <div class="flex flex-col items-center gap-2">
+              <div class="w-8 h-8 bg-gray-100 dark:bg-gray-700 rounded-lg flex items-center justify-center">
+                <svg class="w-4 h-4 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7"></path>
+                </svg>
+              </div>
+              <div class="text-xs">
+                <div class="font-medium text-gray-900 dark:text-white">Private</div>
+                <div class="text-gray-500 dark:text-gray-400">Auto-delete</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Loading state (minimal) -->
+        <div v-if="loading" class="text-center space-y-4">
+          <div class="inline-flex items-center space-x-2 text-gray-600 dark:text-gray-400">
+            <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span>{{ activeTab === 'email' ? 'Checking breach databases...' : 'Scanning social platforms...' }}</span>
+          </div>
+          
+          <!-- Progress indicator -->
+          <div class="max-w-xs mx-auto">
+            <div class="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1">
+              <div 
+                class="h-1 rounded-full bg-blue-600 transition-all duration-500" 
+                :style="{ width: `${progress}%` }"
+              ></div>
+            </div>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">{{ progress.toFixed(0) }}% complete</p>
+          </div>
+        </div>
+
+        <!-- Results sections -->
+        <div v-if="results" class="space-y-8">
+          
+          <!-- Breach Analysis -->
+          <BreachAnalysis 
+            v-if="activeTab === 'email'" 
+            :breaches="results.breaches || []"
+            @download-text="downloadTextClicked"
+            @download-pdf="downloadPDFClicked"
+            @view-details="handleViewDetails"
+          />
+
+          <!-- Platform Registrations -->
+          <PlatformRegistrations 
+            v-if="results.used_on?.length" 
+            :platforms="results.used_on" 
+            debug-id="main-footprint"
+          />
+          
+          <!-- Social Profiles -->
+          <SocialProfiles 
+            v-if="results.sherlock?.length" 
+            :profiles="results.sherlock"
+            :is-partial="results._meta?.partial && activeTab === 'username'"
+            :is-username-search="activeTab === 'username'"
+          />
+          
+          <!-- AI Risk Assessment -->
+          <AIRiskAssessment 
+            v-if="results.explanation"
+            :explanation="results.explanation"
+            :results="results"
+            :scan-type="activeTab"
+          />
+
+          <!-- Survey Section -->
+          <SurveySection @reset="resetScan" />
+        </div>
+
+        <!-- Breach Details Modal -->
+        <div v-if="selectedBreach" class="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div class="bg-white dark:bg-gray-900 w-full max-w-lg rounded-2xl p-6 relative shadow-xl border border-gray-200 dark:border-gray-700">
+            
+            <!-- Title -->
+            <h3 class="text-2xl font-semibold mb-2 text-gray-800 dark:text-white">
+              {{ selectedBreach.title }}
+            </h3>
+
+            <!-- Description -->
+            <div class="mb-5">
+              <p class="text-sm text-gray-700 dark:text-gray-300 mb-1 font-semibold">Description:</p>
+              <div
+                v-if="selectedBreach.description && selectedBreach.description !== 'No description available.'"
+                v-html="cleanDescription"
+                class="text-sm text-gray-700 dark:text-gray-300 space-y-2 leading-relaxed"
+              ></div>
+              <span v-else class="italic text-sm text-gray-500 dark:text-gray-400">No public description available.</span>
+            </div>
+
+            <!-- External Link -->
+            <a
+              :href="`https://haveibeenpwned.com/breach/${encodeURIComponent(selectedBreach.title)}`"
+              class="inline-flex items-center gap-1 text-sm text-blue-600 hover:underline dark:text-blue-400"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14"></path>
+              </svg>
+              View on HIBP →
+            </a>
+
+            <!-- Close Button -->
+            <button
+              @click="selectedBreach = null"
+              class="absolute top-3 right-3 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-xl"
+              aria-label="Close"
+            >✕</button>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <EmptyState v-if="!results && !loading" />
+
+      </div>
+    </main>
+    
+    <AppFooter />
   </div>
 </template>
 
 <script setup>
 import { ref, computed } from 'vue'
-import DonutChart from '../components/DonutChart.vue'
-import TimelineChart from '../components/TimelineChart.vue'
+import DOMPurify from 'dompurify'
+import { useTheme } from '@/composables/theme.js'
+import { useScan } from '@/composables/useScan.js'
+import { useDownload } from '@/composables/useDownload.js'
 
-const profileUrl = ref('')
-const response = ref(null)
-const loading = ref(false)
+// Components
+import AppHeader from '@/components/common/AppHeader.vue'
+import AppFooter from '@/components/common/AppFooter.vue'
+import EmptyState from '@/components/scan/EmptyState.vue'
+import SurveySection from '@/components/common/SurveySection.vue'
+import PlatformRegistrations from '@/components/results/PlatformRegistrations.vue'
+import SocialProfiles from '@/components/results/SocialProfiles.vue'
+import BreachAnalysis from '@/components/results/BreachAnalysis.vue'
+import AIRiskAssessment from '@/components/results/AIRiskAssessment.vue'
 
-const analyzeExposure = async () => {
-  response.value = null
-  loading.value = true
+const selectedBreach = ref(null)
 
-  try {
-    const res = await fetch('http://localhost:3000/api/scrape', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url: profileUrl.value })
-    })
-    response.value = await res.json()
-    if (response.value.educationSuggestions) {
-      localStorage.setItem('educationSuggestions', JSON.stringify(response.value.educationSuggestions))
-    }
-  } catch (err) {
-    response.value = { error: 'Failed to connect to backend.' }
-  } finally {
-    loading.value = false
-  }
+const handleViewDetails = (breach) => {
+  selectedBreach.value = breach
 }
 
-const explainThisAttack = async (index) => {
-  const attack = response.value.simulatedAttacks[index]
-  attack.loading = true
-
-  try {
-    const res = await fetch('http://localhost:3000/api/explain-attack', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        profile: response.value.profileMeta || {},
-        piiExposed: response.value.piiExposed,
-        simulatedAttacks: [attack]
-      })
-    })
-    const data = await res.json()
-    attack.explained = data.explanation
-    attack.quiz = data.quiz || []
-    attack.quiz.forEach(q => q.selected = false)
-  } catch (err) {
-    attack.explained = '⚠️ Failed to explain this attack.'
-  } finally {
-    attack.loading = false
-  }
-}
-
-const checkQuizAnswers = (attack) => {
-  const correct = attack.quiz.filter(q => q.isRedFlag && q.selected).length
-  attack.quizScore = correct
-}
-
-const score = computed(() => {
-  const base = 50
-  const bonus =
-    (response.value?.dataFound?.length || 0) * 5 +
-    (response.value?.potentialRisks?.length || 0) * 10
-  return Math.min(base + bonus, 100)
+const cleanDescription = computed(() => {
+  if (!selectedBreach.value?.description) return ''
+  return DOMPurify.sanitize(selectedBreach.value.description)
 })
 
-const getRiskLevel = (score) => {
-  if (score < 40) return 'Low'
-  if (score < 70) return 'Moderate'
-  return 'High'
-}
+// Composables
+const { isDark } = useTheme()
 
-const getScoreStyle = (score) => {
-  const level = getRiskLevel(score)
-  return {
-    padding: '0.5rem 1rem',
-    borderRadius: '1rem',
-    color: 'white',
-    display: 'inline-block',
-    background:
-      level === 'Low' ? '#2ecc71' : level === 'Moderate' ? '#f1c40f' : '#e74c3c'
+// Scan functionality
+const {
+  activeTab,
+  email,
+  username,
+  results,
+  loading,
+  progress,
+  runScan,
+  cancelScan,
+  resetScan
+} = useScan()
+
+// Download functionality
+const { downloadTextClicked, downloadPDFClicked } = useDownload(activeTab, email, username, results)
+
+// Computed model value
+const modelValue = computed({
+  get: () => activeTab.value === 'email' ? email.value : username.value,
+  set: (val) => {
+    if (activeTab.value === 'email') {
+      email.value = val
+    } else {
+      username.value = val
+    }
   }
-}
+})
 </script>

@@ -1,0 +1,37 @@
+# Core web requests
+requests>=2.31.0
+urllib3>=2.0.7
+
+# HTML parsing for web scraping  
+beautifulsoup4>=4.12.2
+lxml>=4.9.3
+
+# For async HTTP requests
+aiohttp>=3.8.6
+
+# For Sherlock dependencies
+colorama>=0.4.6
+requests-futures>=1.0.1
+PySocks>=1.7.1
+
+# For Google searches / SERP API
+google-search-results>=2.4.2
+
+# SSL certificates
+certifi>=2023.7.22
+
+# Character encoding detection
+charset-normalizer>=3.3.0
+
+# JSON schema validation
+jsonschema>=4.19.0
+
+# Tor requests
+torrequest==0.1.0
+
+# Tor controller
+stem==1.8.2
+
+# Additional useful packages
+python-dotenv>=1.0.0
+click>=8.1.0
