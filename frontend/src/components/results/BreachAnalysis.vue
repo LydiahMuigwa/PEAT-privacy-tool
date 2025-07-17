@@ -105,7 +105,7 @@
                 </h3>
               </div>
               
-              <div class="space-y-2">
+              <div class="space-y-3">
                 <div class="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                   <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a4 4 0 118 0v4m-4 9v2m-6 2h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z"></path>
@@ -113,11 +113,17 @@
                   <span class="font-medium">{{ breach.breachDate }}</span>
                 </div>
                 
-                <div class="flex items-start gap-2 text-sm text-gray-600 dark:text-gray-400">
-                  <svg class="w-4 h-4 text-gray-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                  </svg>
-                  <span class="leading-relaxed">{{ formatDataClasses(breach.dataClasses) }}</span>
+                <!-- Enhanced exposed data section with clear labeling -->
+                <div class="space-y-2">
+                  <div class="flex items-center gap-2 text-sm">
+                    <svg class="w-4 h-4 text-red-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                    <span class="font-medium text-gray-900 dark:text-white">Exposed Data:</span>
+                  </div>
+                  <div class="ml-6">
+                    <span class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">{{ formatDataClasses(breach.dataClasses) }}</span>
+                  </div>
                 </div>
               </div>
             </div>

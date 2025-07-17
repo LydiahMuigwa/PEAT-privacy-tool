@@ -17,16 +17,8 @@
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
               {{ scanType === 'username' ? 'Username Privacy Analysis' : 'AI Privacy Analysis' }}
             </h2>
-            <span v-if="scanType === 'email'" :class="[
-              'px-2 py-1 text-xs font-medium rounded',
-              riskLevel.color === 'red' ? 'bg-red-50 text-red-700 dark:bg-red-900/20 dark:text-red-400' :
-              riskLevel.color === 'orange' ? 'bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400' :
-              'bg-green-50 text-green-700 dark:bg-green-900/20 dark:text-green-400'
-            ]">
-              {{ riskLevel.level }}
-            </span>
-            <span v-else class="px-2 py-1 text-xs font-medium rounded bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
-              ANALYSIS
+            <span class="px-2 py-1 text-xs font-medium rounded bg-blue-50 text-blue-700 dark:bg-blue-900/20 dark:text-blue-400">
+              AI GENERATED
             </span>
           </div>
           <p class="text-sm text-gray-500 dark:text-gray-400">

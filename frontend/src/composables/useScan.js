@@ -1,7 +1,6 @@
 // composables/useScan.js
 import { ref } from 'vue'
 import { validateInput } from '@/utils/validation.js'
-import confetti from 'canvas-confetti'
 
 export function useScan() {
   // Get API base URL from environment variable
@@ -15,12 +14,6 @@ export function useScan() {
   const loading = ref(false)
   const progress = ref(0)
   let scanAbortController = null
-
-  // Utility functions
-  function fireConfettiBurst() {
-    const colors = ['#22c55e', '#2563eb', '#10b981']
-    confetti({ particleCount: 40, spread: 70, origin: { y: 0.6 }, colors })
-  }
 
   const resetScan = () => {
     email.value = ''
@@ -118,26 +111,22 @@ export function useScan() {
   }
 
   const performEmailScan = async (params, signal) => {
-  // Quick scan
-  const quickData = await performQuickScan(params, signal)
-  
-  // Celebration for no breaches - BACK TO ORIGINAL POSITION
-  // Only celebrate if quick scan shows no breaches
-  if (quickData && 
-      quickData.breaches && 
-      Array.isArray(quickData.breaches) && 
-      quickData.breaches.length === 0) {
-    console.log('🎉 No breaches found - celebrating!')
-    fireConfettiBurst()
-    setTimeout(fireConfettiBurst, 500)
-    setTimeout(fireConfettiBurst, 1000)
-  } else if (quickData && quickData.breaches && quickData.breaches.length > 0) {
-    console.log(`⚠️ Found ${quickData.breaches.length} breaches - no celebration`)
-  }
+    // Quick scan
+    const quickData = await performQuickScan(params, signal)
+    
+    // Simple log for no breaches - no confetti
+    if (quickData && 
+        quickData.breaches && 
+        Array.isArray(quickData.breaches) && 
+        quickData.breaches.length === 0) {
+      console.log('✅ No breaches found - looking good!')
+    } else if (quickData && quickData.breaches && quickData.breaches.length > 0) {
+      console.log(`⚠️ Found ${quickData.breaches.length} breaches`)
+    }
 
-  // Full scan
-  await performFullScan(params, signal)
-}
+    // Full scan
+    await performFullScan(params, signal)
+  }
 
   const performQuickScan = async (params, signal) => {
     let quickScanProgress = 0
