@@ -4,6 +4,9 @@ import { validateInput } from '@/utils/validation.js'
 import confetti from 'canvas-confetti'
 
 export function useScan() {
+  // Get API base URL from environment variable
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+  
   // Reactive state
   const activeTab = ref('email')
   const email = ref('')
@@ -87,7 +90,7 @@ export function useScan() {
       }
     }, 200)
 
-    const res = await fetch(`/api/scan?${params.toString()}`, { 
+    const res = await fetch(`${API_BASE_URL}/api/scan?${params.toString()}`, { 
       signal,
       method: 'GET',
       headers: {
@@ -142,7 +145,7 @@ export function useScan() {
     const quickParams = new URLSearchParams(params)
     quickParams.set('scanType', 'email') // Quick scan is always email
 
-    const quickRes = await fetch(`/api/scan/quick?${quickParams.toString()}`, { 
+    const quickRes = await fetch(`${API_BASE_URL}/api/scan/quick?${quickParams.toString()}`, { 
       signal,
       method: 'GET',
       headers: {
@@ -180,7 +183,7 @@ export function useScan() {
       }
     }, 150)
 
-    const fullRes = await fetch(`/api/scan?${params.toString()}`, { 
+    const fullRes = await fetch(`${API_BASE_URL}/api/scan?${params.toString()}`, { 
       signal,
       method: 'GET',
       headers: {

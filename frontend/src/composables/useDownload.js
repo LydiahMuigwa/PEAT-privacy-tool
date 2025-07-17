@@ -3,6 +3,9 @@ import { computed } from 'vue'
 
 export function useDownload(activeTab, email, username, results) {
   
+  // Get API base URL from environment variable
+  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000'
+  
   // Calculate risk score for reports
   const riskScore = computed(() => {
     if (!results.value) return 0
@@ -208,8 +211,8 @@ For more information, visit: https://peat-privacy.tool
         params.append('username', scanTarget)
       }
 
-      // Call backend PDF generation endpoint
-      const response = await fetch(`/api/report/pdf?${params.toString()}`, {
+      // Call backend PDF generation endpoint - FIXED: Using full API URL
+      const response = await fetch(`${API_BASE_URL}/api/report/pdf?${params.toString()}`, {
         method: 'GET',
         headers: {
           'Accept': 'application/pdf',

@@ -4,9 +4,10 @@
   "description": "PEAT Web Scanner Backend - Sherlock & Holehe Integration",
   "main": "server.js",
   "scripts": {
-    "start": "cd backend && npm start",
+    "start": "cd backend && node server.js",
     "dev": "cd backend && npm run dev",
-    "build": "cd backend && npm install"
+    "build": "cd backend && npm install",
+    "install-backend": "cd backend && npm install"
   },
   "engines": {
     "node": ">=18.0.0",
@@ -21,7 +22,8 @@
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "openai": "^4.28.0",
-    "fs-extra": "^11.2.0"
+    "fs-extra": "^11.2.0",
+    "pdfkit": "^0.13.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
