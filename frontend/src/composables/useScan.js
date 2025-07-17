@@ -121,22 +121,22 @@ export function useScan() {
   // Quick scan
   const quickData = await performQuickScan(params, signal)
   
-  // Full scan
-  await performFullScan(params, signal)
-  
-  // Celebration for no breaches - MOVED TO AFTER FULL SCAN
-  // Only celebrate if we have results and NO breaches found
-  if (results.value && 
-      results.value.breaches && 
-      Array.isArray(results.value.breaches) && 
-      results.value.breaches.length === 0) {
+  // Celebration for no breaches - BACK TO ORIGINAL POSITION
+  // Only celebrate if quick scan shows no breaches
+  if (quickData && 
+      quickData.breaches && 
+      Array.isArray(quickData.breaches) && 
+      quickData.breaches.length === 0) {
     console.log('🎉 No breaches found - celebrating!')
     fireConfettiBurst()
     setTimeout(fireConfettiBurst, 500)
     setTimeout(fireConfettiBurst, 1000)
-  } else if (results.value && results.value.breaches && results.value.breaches.length > 0) {
-    console.log(`⚠️ Found ${results.value.breaches.length} breaches - no celebration`)
+  } else if (quickData && quickData.breaches && quickData.breaches.length > 0) {
+    console.log(`⚠️ Found ${quickData.breaches.length} breaches - no celebration`)
   }
+
+  // Full scan
+  await performFullScan(params, signal)
 }
 
   const performQuickScan = async (params, signal) => {

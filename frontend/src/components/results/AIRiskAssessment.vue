@@ -35,14 +35,21 @@
         </div>
       </div>
       
-      <svg 
-        :class="['w-5 h-5 text-gray-400 transition-transform duration-200', expanded ? 'rotate-180' : '']"
-        fill="none" 
-        stroke="currentColor" 
-        viewBox="0 0 24 24"
-      >
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-      </svg>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-gray-500 dark:text-gray-400 font-medium">
+          {{ expanded ? 'Collapse' : 'Expand' }}
+        </span>
+        <div class="w-8 h-8 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full flex items-center justify-center transition-colors duration-200">
+          <svg 
+            :class="['w-4 h-4 text-gray-600 dark:text-gray-300 transition-transform duration-200', expanded ? 'rotate-180' : '']"
+            fill="none" 
+            stroke="currentColor" 
+            viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+          </svg>
+        </div>
+      </div>
     </div>
 
     <!-- Minimal stats when collapsed - HIDE for username scans -->
@@ -140,7 +147,7 @@ const props = defineProps({
   }
 })
 
-const expanded = ref(false)
+const expanded = ref(true)
 
 // Format the AI explanation with proper styling
 const formattedExplanation = computed(() => {
@@ -155,25 +162,7 @@ const formattedExplanation = computed(() => {
     .replace(/<strong>(Immediate Risks|Platform-Specific Risks|Long-term Concerns|Action Plan|Positive Notes)<\/strong>/g, 
              '<h4 class="text-lg font-bold text-gray-900 dark:text-white mb-3 mt-6 first:mt-0">$1</h4>')
     
-  // Strategic bolding for scannability (do this before removing other <strong> tags)
-  formatted = formatted
-    // Bold risk levels
-    .replace(/\b(HIGH|MEDIUM|LOW|CRITICAL)\b/g, '<strong class="font-semibold text-gray-800 dark:text-gray-200">$1</strong>')
-    // Bold common platform names (case insensitive)
-    .replace(/\b(LinkedIn|Facebook|Twitter|Instagram|GitHub|Adobe|Canva|Dropbox|Gmail|Yahoo|Hotmail|TikTok|Snapchat|WhatsApp)\b/gi, 
-             '<strong class="font-semibold text-gray-800 dark:text-gray-200">$1</strong>')
-    // Bold key security actions
-    .replace(/\b(Change your passwords?|Enable 2FA|two-factor authentication|Monitor your accounts?|Review privacy settings)\b/gi, 
-             '<strong class="font-semibold text-gray-800 dark:text-gray-200">$1</strong>')
-    // Bold important time references
-    .replace(/\b(\d+\+?\s*years?\s*ago|3\+\s*years?)\b/gi, 
-             '<strong class="font-semibold text-gray-800 dark:text-gray-200">$1</strong>')
-    // Bold breach counts
-    .replace(/\b(\d+)\s*breaches?\b/gi, 
-             '<strong class="font-semibold text-gray-800 dark:text-gray-200">$1 breach$2</strong>')
-    // Bold sensitive data types
-    .replace(/\b(passwords?|credit cards?|email addresses?|phone numbers?|social security numbers?|SSN|personal information)\b/gi, 
-             '<strong class="font-semibold text-gray-800 dark:text-gray-200">$1</strong>')
+  // Only bold the main section headers - no other forced bolding
     
   // Now remove all remaining <strong> tags to prevent over-bolding
   formatted = formatted
