@@ -118,19 +118,26 @@ export function useScan() {
   }
 
   const performEmailScan = async (params, signal) => {
-    // Quick scan
-    const quickData = await performQuickScan(params, signal)
-    
-    // Celebration for no breaches
-    if (quickData.breaches?.length === 0) {
-      fireConfettiBurst()
-      setTimeout(fireConfettiBurst, 500)
-      setTimeout(fireConfettiBurst, 1000)
-    }
-
-    // Full scan
-    await performFullScan(params, signal)
+  // Quick scan
+  const quickData = await performQuickScan(params, signal)
+  
+  // Full scan
+  await performFullScan(params, signal)
+  
+  // Celebration for no breaches - MOVED TO AFTER FULL SCAN
+  // Only celebrate if we have results and NO breaches found
+  if (results.value && 
+      results.value.breaches && 
+      Array.isArray(results.value.breaches) && 
+      results.value.breaches.length === 0) {
+    console.log('🎉 No breaches found - celebrating!')
+    fireConfettiBurst()
+    setTimeout(fireConfettiBurst, 500)
+    setTimeout(fireConfettiBurst, 1000)
+  } else if (results.value && results.value.breaches && results.value.breaches.length > 0) {
+    console.log(`⚠️ Found ${results.value.breaches.length} breaches - no celebration`)
   }
+}
 
   const performQuickScan = async (params, signal) => {
     let quickScanProgress = 0
